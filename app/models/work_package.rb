@@ -122,9 +122,7 @@ class WorkPackage < ActiveRecord::Base
   after_save :update_parent_attributes
   after_destroy :update_parent_attributes
 
-  # TODO: adapt to have them called
-  #after_move :remove_invalid_relations,
-  #after_move :recalculate_attributes_for_former_parent
+  after_save :remove_invalid_relations, if: -> { parent_id_changed? }
   after_save :recalculate_attributes_for_former_parent
 
   before_destroy :fetch_children_to_destroy
@@ -664,7 +662,7 @@ class WorkPackage < ActiveRecord::Base
   end
 
   def recalculate_attributes_for_former_parent
-    if changes[:parent_id] && changes[:parent_id].first
+    if parent_id_changed? && changes[:parent_id].first
       recalculate_attributes_for(changes[:parent_id].first)
     end
   end
@@ -734,17 +732,22 @@ class WorkPackage < ActiveRecord::Base
     reload # important
   end
 
+  def self.having_fixed_version_from_other_project
+    where(
+      "#{WorkPackage.table_name}.fixed_version_id IS NOT NULL" +
+      " AND #{WorkPackage.table_name}.project_id <> #{Version.table_name}.project_id" +
+      " AND #{Version.table_name}.sharing <> 'system'"
+    )
+  end
+  private_class_method :having_fixed_version_from_other_project
+
   # Update issues so their versions are not pointing to a
   # fixed_version that is not shared with the issue's project
   def self.update_versions(conditions = nil)
     # Only need to update issues with a fixed_version from
     # a different project and that is not systemwide shared
     WorkPackage
-      .where(
-        "#{WorkPackage.table_name}.fixed_version_id IS NOT NULL" +
-        " AND #{WorkPackage.table_name}.project_id <> #{Version.table_name}.project_id" +
-        " AND #{Version.table_name}.sharing <> 'system'"
-      )
+      .having_fixed_version_from_other_project
       .where(conditions)
       .includes(:project, :fixed_version)
       .references(:versions).each do |issue|

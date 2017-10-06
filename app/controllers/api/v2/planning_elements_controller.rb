@@ -379,7 +379,7 @@ module Api
           if !orig.ancestors_relations.empty?
             struct = structs.detect { |s| s.id == orig.id }
             ancestor_candidates = orig.ancestors_relations.sort_by(&:hierarchy).map(&:from_id)
-            struct.parent_id = (filtered_ids & ancestor_candidates).first
+            struct.parent_id = (ancestor_candidates & filtered_ids).first
           end
         end
 

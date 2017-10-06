@@ -221,9 +221,8 @@ class Relation < ActiveRecord::Base
   end
 
   def shared_hierarchy?
-    # TODO: move to typed_dag
-    to_from = Relation.hierarchy.where(to: to, from: from)
-    from_to = Relation.hierarchy.where(to: from, from: to)
+    to_from = hierarchy_but_not_self(to: to, from: from)
+    from_to = hierarchy_but_not_self(to: from, from: to)
 
     to_from
       .or(from_to)
@@ -255,5 +254,9 @@ class Relation < ActiveRecord::Base
       self.from = work_package_tmp
       self.relation_type = TYPES[relation_type][:reverse]
     end
+  end
+
+  def hierarchy_but_not_self(to:, from:)
+    Relation.hierarchy.where(to: to, from: from).where.not(id: id)
   end
 end
