@@ -746,8 +746,7 @@ class WorkPackage < ActiveRecord::Base
   def self.update_versions(conditions = nil)
     # Only need to update issues with a fixed_version from
     # a different project and that is not systemwide shared
-    WorkPackage
-      .having_fixed_version_from_other_project
+    having_fixed_version_from_other_project
       .where(conditions)
       .includes(:project, :fixed_version)
       .references(:versions).each do |issue|
