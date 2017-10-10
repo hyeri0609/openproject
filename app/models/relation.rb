@@ -111,7 +111,8 @@ class Relation < ActiveRecord::Base
   end
 
   def self.visible(user = User.current)
-    where(from_id: WorkPackage.visible(user))
+    direct
+      .where(from_id: WorkPackage.visible(user))
       .where(to_id: WorkPackage.visible(user))
   end
 

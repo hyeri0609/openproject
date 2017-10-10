@@ -70,7 +70,8 @@ describe 'API v3 Relation resource', type: :request do
 
   describe "creating a relation" do
     before do
-      expect(Relation.count).to eq 0
+      # reflexive relations
+      expect(Relation.count).to eq 2
 
       header "Content-Type", "application/json"
       post "/api/v3/work_packages/#{from.id}/relations", params.to_json
@@ -81,7 +82,8 @@ describe 'API v3 Relation resource', type: :request do
     end
 
     it 'should have created a new relation' do
-      expect(Relation.count).to eq 1
+      # reflexive relations + created one
+      expect(Relation.count).to eq 3
     end
 
     it 'should have created the relation correctly' do
