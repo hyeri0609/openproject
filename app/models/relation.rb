@@ -241,6 +241,8 @@ class Relation < ActiveRecord::Base
   end
 
   def set_type_column
+    return unless relation_type
+
     column = self.class.relation_column(relation_type)
 
     send("#{column}=", 1)
